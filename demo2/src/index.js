@@ -4,7 +4,7 @@ const rootElement = document.getElementById("root");
 
 let x=undefined
 function myUseState(initialValue) {
-  let state=x===undefined?x:initialValue
+  let state=x===undefined?initialValue:x
   function setState(newState) {
     x = newState;
     render();

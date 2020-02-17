@@ -17,12 +17,11 @@ function myUseState(initialValue) {
     )
   }
 
-  let x = middles[sum].data
+  let x = middles[current].data
   let state = x === undefined ? initialValue : x
 
   // setState 声明了多次，每次声明的 setState 可以访问该次声明的 state
   function setState(newState) {
-    console.log(current)
     middles[current].data = newState // 这里不能用 middles[sum].data = newState,因为 middles 虽然可以访问到 sum,但是已经不是曾经的 sum 了。
     render();
   }

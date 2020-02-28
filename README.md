@@ -66,6 +66,6 @@ setState({
   const add=()=>{
     setCount(x=>x+1)
     setCount(x=>x+10)
-    setCount(x=>x+100) // 只有这次生效，事实上只 render 一次
+    setCount(x=>x+100) // x+=(1+10+100)
   }
 ```

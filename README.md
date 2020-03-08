@@ -72,3 +72,4 @@ setState({
     setCount(x=>x+100) // x+=(1+10+100)
   }
 ```
+#### [我们无法在 mousemove 的回调函数中获取到 barScrollTop](https://stackoverflow.com/questions/55126487/function-not-correctly-reading-updated-state-from-react-hook-state) 

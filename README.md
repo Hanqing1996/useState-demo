@@ -21,10 +21,6 @@ useState 的简单示例
 3. useState:读取 state[index]
 4. setState:修改 state[index],并触发 render
 
-#### demo4
->
-
-
 
 #### useState
 * useState 接受函数
@@ -82,3 +78,38 @@ useEffect(()=>{
 ```
 
 #### [我们无法在 mousemove 的回调函数中获取到 barScrollTop](https://stackoverflow.com/questions/55126487/function-not-correctly-reading-updated-state-from-react-hook-state) 
+---
+#### [getState() hook proposal](https://github.com/facebook/react/issues/14092)
+> useState 的局限性：在 useEffect 的异步函数中，无法读取到 setState 后的 state 值。
+```
+const HooksComponent = () => {
+    const [value, setValue] = useState({ val: 0 });
+
+    useEffect(() => {
+        setTimeout(() => setValue({ val: 10 }), 100)
+        setTimeout(() => console.log('value: ', value.val), 200)
+    }, []);
+}
+//console.log output: 0 instead of 10
+```
+> 有人提出可以用useRef来随时读取最新的state
+```
+// useUserList is a custom hook
+function useUserList(initialUsers = []) {
+  const [users, setUsers] = useState(initialUsers)
+  const usersRef = useRef(users)
+
+  return {
+    users: usersRef,
+    setUsers: function(mapper) {
+      usersRef.current = mapper(usersRef.current)
+      setUsers(mapper)
+    },
+  }
+}
+
+const UserList = () => {
+  const { users, setUsers } = useUserList()
+  // ...
+}
+```

@@ -324,3 +324,45 @@ ReactDOM.render(<Counter />, rootElement);
  */
 
 ```
+#### [setCount(c => c + 1) can always read fresh state for that variable](https://overreacted.io/making-setinterval-declarative-with-react-hooks/)
+> But this doesn’t help you read the fresh props, for example.
+* [bug：count总是1](https://codesandbox.io/s/jj0mk6y683?file=/src/index.js) 
+```
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let id = setInterval(() => {
+      setCount(count + 1);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return <h1>{count}</h1>;
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<Counter />, rootElement);
+
+/**
+ * const count=0 // A1
+ * 执行 useEffect
+ * id=setInterval(()=>{...},1000) // 假设 ()=>{...} 是F1
+ * 执行 setInterval(()=>{...},1000) // 执行 F1
+ *
+ * 1s到了，执行()=>{setCOunt(count+1)}
+ * 执行 setCount // 这里访问的是A1处的count
+ * const count=1
+ *
+ * 2s到了，执行()=>{setCOunt(count+1)} // 执行 F1
+ * 执行 setCount // 这里访问的是A1处的count
+ * const count=1
+ *
+ * ...
+ */
+
+```
+解决方法就是把 setCount(count + 1) 改成 setCount(count=>count + 1)

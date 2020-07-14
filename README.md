@@ -366,3 +366,4 @@ ReactDOM.render(<Counter />, rootElement);
 
 ```
 解决方法就是把 setCount(count + 1) 改成 setCount(count=>count + 1)
+> Another fix is to useReducer(). This approach gives you more flexibility. Inside the reducer, you have the access both to current state and fresh props. The dispatch function itself never changes so you can pump data into it from any closure. One limitation of useReducer() is that you can’t yet emit side effects in it. (However, you could return new state — triggering some effect.)

@@ -115,9 +115,7 @@ const UserList = () => {
 ```
 ---
 #### [setCount会导致count每次都被重新声明](https://zhuanlan.zhihu.com/p/82589347)
-```
-count 每次都被重新声明了
-```
+* [codesandbox](https://codesandbox.io/s/105x531vkq)
 * 例1
 ```
 import React, { useState, useEffect, useRef } from "react";

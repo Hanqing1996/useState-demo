@@ -113,3 +113,216 @@ const UserList = () => {
   // ...
 }
 ```
+---
+#### [setCount会导致count每次都被重新声明](https://zhuanlan.zhihu.com/p/82589347)
+```
+count 每次都被重新声明了
+```
+* 例1
+```
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  let num = 0;
+  console.log(`render-num:${num}`);
+  useEffect(() => {
+    const id = setInterval(() => {
+      // 通过 num 来给 count 提供值
+      console.log(num);
+      setCount(++num);
+    }, 1000);
+  }, []);
+
+  return <h1>{count}</h1>;
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<Counter />, rootElement);
+
+/**
+ * const count=0
+ * let num=0 // A1
+ * id=setInterval(()=>{...},1000)
+ * 
+ * 1s到了，运行()=>{console.log(num);setCount(++num)} // 这里访问A1处的变量num
+ * num=1 // A1处的变量num值变为1
+ * const count=1
+ * let num=0
+ * 
+ * 2s到了，运行()=>{console.log(num);setCount(++num)} // 这里访问A1处的变量num
+ * num=2 // A1处的变量num值变为2
+ * const count=2
+ * let num=0
+ * 
+ * 3s到了，运行()=>{console.log(num);setCount(++num)} // 这里访问A1处的变量num
+ * num=3 // A1处的变量num值变为3
+ * const count=3
+ * let num=0
+ * ...
+ */
+```
+---
+* 例2
+```
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  console.log(`${count} is count`);
+  const [delay, setDelay] = useState(1000);
+
+  useInterval(() => {
+    // Your custom logic here
+    console.log(`in callback, count is ${count}`);
+    setCount(count + 1);
+  }, delay);
+
+  function handleDelayChange(e) {
+    setDelay(Number(e.target.value));
+  }
+
+  return (
+    <>
+      <h1>{count}</h1>
+      <input value={delay} onChange={handleDelayChange} />
+    </>
+  );
+}
+
+function useInterval(callback, delay) {
+  // const savedCallback = useRef();
+
+  // savedCallback.current = callback;
+
+  // Remember the latest function.
+  // useEffect(() => {
+  //   savedCallback.current = callback;
+  // }, [callback]);
+
+  // Set up the interval.
+  useEffect(() => {
+    console.log("delay change");
+    function tick() {
+      callback();
+    }
+    if (delay !== null) {
+      console.log("setId");
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<Counter />, rootElement);
+
+/**
+ * const count=0,callback 始终只能访问这个 count
+ * 执行 useInterval
+ * let callback=()=>{...};let delay=1000
+ * function tick(){...}
+ * id=setInterval(tick, delay);
+ *
+ * 1s到了，执行 tick
+ * 执行 callback
+ * 执行 setCount
+ * const count=1
+ * 执行 useInterval
+ * let callback=()=>{...};let delay=1000
+ * 
+ * 2s到了，执行tick
+ * 执行 callback
+ * 执行 setCount
+ * const count=1
+ * 
+ * 3s到了，执行tick
+ * 执行 callback
+ * 执行 setCount
+ * const count=1
+ * 
+ * ...
+ *
+ */
+```
+---
+* 例3
+```
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  const [delay, setDelay] = useState(1000);
+
+  useInterval(() => {
+    // Your custom logic here
+    setCount(count + 1);
+  }, delay);
+
+  function handleDelayChange(e) {
+    setDelay(Number(e.target.value));
+  }
+
+  return (
+    <>
+      <h1>{count}</h1>
+      <input value={delay} onChange={handleDelayChange} />
+    </>
+  );
+}
+
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
+
+  // Remember the latest function.
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  // Set up the interval.
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<Counter />, rootElement);
+
+/**
+ * const count=0 // A1
+ * 执行 useInterval
+ * let callback=()=>{...};let delay=1000
+ * savedCallback.current = callback; // 这里的 savedCallback.current 能接触到 A1 处的变量 count
+ * function tick(){...}
+ * id=setInterval(tick, delay);
+ *
+ * 1s到了，执行 tick
+ * 执行 savedCallback.current
+ * 执行 setCount
+ * const count=1 // A2
+ * 执行 useInterval
+ * let callback=()=>{...};let delay=1000
+ * savedCallback.current = callback;// 这里的 savedCallback.current 能接触到 A2 处的变量 count
+ *
+ * 2s到了，执行tick
+ * 执行 savedCallback.current // 
+ * 执行 setCount
+ * const count=2 // A3
+ * 执行 useInterval
+ * let callback=()=>{...};let delay=1000
+ * savedCallback.current = callback;// 这里的 savedCallback.current 能接触到 A3 处的变量 count
+ * ...
+ * 
+ */
+
+```

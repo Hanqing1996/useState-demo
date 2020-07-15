@@ -414,7 +414,7 @@ const useTags = () => {
     })
 }
 ```
-* 解决方法1. 改用hooks外的变量
+* 解决方法2. 改用hooks外的变量
 ```
 const initialValue= [
     {id: createId(), name: '衣'},

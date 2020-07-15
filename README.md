@@ -367,3 +367,63 @@ ReactDOM.render(<Counter />, rootElement);
 ```
 解决方法就是把 setCount(count + 1) 改成 setCount(count=>count + 1)
 > Another fix is to useReducer(). This approach gives you more flexibility. Inside the reducer, you have the access both to current state and fresh props. The dispatch function itself never changes so you can pump data into it from any closure. One limitation of useReducer() is that you can’t yet emit side effects in it. (However, you could return new state — triggering some effect.)
+---
+#### useState 接受函数的好处
+* [参考](https://reactjs.org/docs/hooks-faq.html#how-to-create-expensive-objects-lazily)
+> 若 useState 的第二个参数为函数，则该函数只在第一次 render 时执行
+
+#### 每次 render,都会执行5次createId
+```
+const useTags = () => {
+
+    const [tags, setTags] = useState<Tag []>([
+            {id: createId(), name: '衣'},
+            {id: createId(), name: '食'},
+            {id: createId(), name: '住'},
+            {id: createId(), name: '行'},
+        ])
+}
+```
+* 解决方法1. 改用函数
+```
+const useTags = () => {
+
+    const getInitialValue=()=>{
+        console.log('getInitialValue execute');
+        return [
+            {id: createId(), name: '衣'},
+            {id: createId(), name: '食'},
+            {id: createId(), name: '住'},
+            {id: createId(), name: '行'},
+        ]
+    }
+
+    const [tags, setTags] = useState<Tag []>(getInitialValue)
+```
+等效于
+```
+const useTags = () => {
+    const [tags, setTags] = useState<Tag []>(()=>{
+        console.log('getInitialValue execute');
+        return [
+            {id: createId(), name: '衣'},
+            {id: createId(), name: '食'},
+            {id: createId(), name: '住'},
+            {id: createId(), name: '行'},
+        ]
+    })
+}
+```
+* 解决方法1. 改用hooks外的变量
+```
+const initialValue= [
+    {id: createId(), name: '衣'},
+    {id: createId(), name: '食'},
+    {id: createId(), name: '住'},
+    {id: createId(), name: '行'},
+]
+const useTags = () => {
+    const [tags, setTags] = useState<Tag []>(initialValue)
+}
+```
+

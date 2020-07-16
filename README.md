@@ -414,6 +414,7 @@ const useTags = () => {
     })
 }
 ```
+> 但是当我们有两个页面（组件）都用到 useTags 的话，由于两个组件都会在第一次render时执行useState的第二个参数，所以createdId还是会被重复执行。详见[]()，此时唯一的解决方法就是下面那样，把初始值用一个变量保存，放在hooks外。ES6的模块机制会保证被引用方法所在文件只执行一次（[详见这里](https://github.com/Hanqing1996/JavaScript-advance/blob/master/%E5%85%B6%E5%AE%831/README.md#export)），从而保证了hook外的变量赋值不会重复进行。
 * 解决方法2. 改用hooks外的变量
 ```
 const initialValue= [

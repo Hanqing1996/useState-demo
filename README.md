@@ -427,4 +427,27 @@ const useTags = () => {
     const [tags, setTags] = useState<Tag []>(initialValue)
 }
 ```
+---
+#### 糟糕的写法
+```
+// EditTag.tsx，根据用户对tagList的选择(Id)渲染页面
+
+const EditTag = () => {
+
+    const [tagId] = useState(Number(useParams<{ tagId: string }>().tagId))
+}
+```
+
+这种写法的糟糕之处在于，tagId其实是不变的，不需要 EditTag 组件进行任何维护，这有悖于useState的意义（用 useMemo 也不对，因为tagId 重新 render 时的计算代价并不高；EditTag 既不是引用类型，也没有子组件）。应该直接写成下面这样
+```
+const EditTag = () => {
+
+    const [tagId] = Number(useParams<{ tagId: string }>().tagId)
+}
+```
+
+
+
+
+
 

@@ -445,6 +445,78 @@ const EditTag = () => {
     const [tagId] = Number(useParams<{ tagId: string }>().tagId)
 }
 ```
+---
+#### 组件维护的 state 应该越少越好，其余变量用作根据 state 渲染视图
+* 糟糕的写法：组件需要维护 value 这个 state
+> 在 value 这个 state 变化后，tag.name 随之变化
+```
+const EditTag = () => {
+
+    const tagId = Number(useParams<{ tagId: string }>().tagId)
+    const {updateTag} = useTags()
+    const tag = findTag(tagId)
+    const {value, onUpdateValue} = useValue(tag.name)
+
+    useEffect(() => {
+        updateTag(tagId, {...tag, name: value})
+    }, [value])
+
+    return (
+        <Layout>
+            <Edit className='edit' value={value} fieldName="标签名" placeholder="请在这里输入标签名" onUpdateValue={onUpdateValue}/>
+        </Layout>
+       )
+    )
+}
+```
+* 改进的写法：组件不需要维护 value
+> 改变 value 时，直接更新 tag.name。value 始终只用于 tag.name 的渲染
+```
+
+const EditTag = () => {
+
+    const tagId = Number(useParams<{ tagId: string }>().tagId)
+    const {updateTag} = useTags()
+    const tag = findTag(tagId)
+
+    return (
+            <Layout>
+                <Edit className='edit' value={tag.name} fieldName="标签名" placeholder="请在这里输入标签名" onUpdateValue={
+                    (value) => {
+                        updateTag(tagId, {...tag, name: value})
+                    }
+                }/>
+            </Layout>
+        )
+    )
+}
+```
+---
+#### setState 的参数如果是数组或对象
+* bug
+以下的 setTags 不奏效，即 tags 不会更新。因为 copy 是 tags 的浅拷贝，setTags 察觉到参数的引用与之前的tags相同，则不会去改动 tags
+```
+const deleteTag = (targetId: number) => {
+
+    const copy = tags
+    const idList = copy.map((tag: Tag) => tag.id)
+    const targetIndex = idList.indexOf(targetId)
+    copy.splice(targetIndex, 1)
+    setTags(copy)
+}
+```
+* 解决方法：改用深拷贝
+```
+const deleteTag = (targetId: number) => {
+
+    const copy = JSON.parse(JSON.stringify(tags))
+    const idList = copy.map((tag: Tag) => tag.id)
+    const targetIndex = idList.indexOf(targetId)
+    copy.splice(targetIndex, 1)
+    setTags(copy)
+}
+```
+---
 
 
 

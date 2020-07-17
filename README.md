@@ -517,8 +517,28 @@ const deleteTag = (targetId: number) => {
 }
 ```
 ---
+#### useState 的 initialValue 为什么要放在 useEffect(()=>{},[]) 的回调函数内
+* 不放在 useEffect 回调函数里面
+```
+const initialValue = JSON.parse(window.localStorage.getItem('tags') || '[]')
 
+const useTags = () => {
+    const [tags, setTags] = useState<Tag []>(initialValue)
+}
+```
+> 假如有A,B两个组件都用到了 useTags 这个自定义hook。当A更新了 tags,然后我们由A所在页面切换到B,我们将发现B所在页面没有更新，因为 tags 的依然会被初始为 initialValue
+* 解决方法：放在 useEffect 回调函数里面
+```
 
+const useTags = () => {
+    const [tags, setTags] = useState<Tag []>([])
+
+    useEffect(() => {
+        setTags(JSON.parse(window.localStorage.getItem('tags') || '[]'))
+    }, [])
+}
+```
+> 这样做的意义在于，当A更新了 tags,然后我们由A所在页面切换到B,useEffect会被触发，tags 的初始值
 
 
 
